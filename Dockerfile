@@ -38,7 +38,7 @@ RUN         pip install codecov
 
 # Cache project dependencies
 ADD         . ./cache/
-RUN         cd ./cache/ && sbt compile
+RUN         cd ./cache/ && sbt +compile
 RUN         rm -r ./cache
 
 WORKDIR     /akka-http-phoenix/
