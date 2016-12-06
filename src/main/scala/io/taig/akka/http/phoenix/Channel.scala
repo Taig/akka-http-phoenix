@@ -6,6 +6,7 @@ import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import io.circe.Json
 import io.taig.akka.http.phoenix.message.Response
 
+import scala.concurrent.duration.Duration.Infinite
 import scala.concurrent.{ Future, TimeoutException }
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -21,7 +22,7 @@ case class Channel(
     def send(
         event:   Event,
         payload: Json,
-        timeout: FiniteDuration = 3 second
+        timeout: Duration = Default.timeout
     ): Future[Result] = Channel.send( event, payload, timeout )( flow )
 
     def leave(): Future[Result] = send( Event.Leave, Json.Null )
@@ -30,8 +31,8 @@ case class Channel(
 object Channel {
     def join(
         topic:   Topic,
-        payload: Json           = Json.Null,
-        timeout: FiniteDuration = 3 second
+        payload: Json     = Json.Null,
+        timeout: Duration = Default.timeout
     )(
         flow: Flow[( Event, Json, Ref ), Response, _]
     )(
@@ -47,7 +48,7 @@ object Channel {
         }
     }
 
-    def send( event: Event, payload: Json, timeout: FiniteDuration = 1 second )(
+    def send( event: Event, payload: Json, timeout: Duration = Default.timeout )(
         flow: Flow[( Event, Json, Ref ), Response, _]
     )(
         implicit
@@ -58,10 +59,16 @@ object Channel {
 
         val ref = Ref.unique()
 
-        Source.single( event, payload, ref )
+        val source = Source.single( event, payload, ref )
             .via( flow )
             .filter( ref == _.ref )
-            .completionTimeout( timeout )
+
+        val withTimeout = timeout match {
+            case timeout: FiniteDuration ⇒ source.completionTimeout( timeout )
+            case _: Infinite             ⇒ source
+        }
+
+        withTimeout
             .toMat( Sink.headOption[Response] )( Keep.right )
             .run()
             .map {

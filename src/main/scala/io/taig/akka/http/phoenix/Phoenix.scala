@@ -23,8 +23,8 @@ case class Phoenix(
 ) {
     def join(
         topic:   Topic,
-        payload: Json           = Json.Null,
-        timeout: FiniteDuration = 3 second
+        payload: Json     = Json.Null,
+        timeout: Duration = Default.timeout
     )(
         implicit
         as: ActorSystem,
@@ -44,7 +44,7 @@ case class Phoenix(
 object Phoenix {
     def fromFlow(
         websocket: Flow[Message, Message, Future[WebSocketUpgradeResponse]],
-        heartbeat: Option[FiniteDuration]                                   = Some( 7 seconds )
+        heartbeat: Option[FiniteDuration]                                   = Default.heartbeat
     )(
         implicit
         as: ActorSystem,
