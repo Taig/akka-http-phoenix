@@ -16,7 +16,7 @@ libraryDependencies += "io.taig" %% "akka-http-phoenix" % "1.0.0-SNAPSHOT"
 
 ## Usage
 
-```tut:book
+```tut:silent
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.stream.ActorMaterializer
@@ -45,7 +45,8 @@ val future = for {
     // Shutdown socket connection from the client side
     _ = phoenix.close()
 } yield response
-
+```
+```tut
 try {
     Await.result( future, 3 seconds )
 } finally {
@@ -55,7 +56,7 @@ try {
 
 ## Test-Suite & Documentation
 
-Code executed by the unit tests or documentation generation via [tut][4] required the [phoenix_echo][5] app to be running in the background. Use the provided `Dockerfile` to create an image with preinstalled requirements.
+Code executed by the unit tests or documentation generation via [tut][4] requires the [phoenix_echo][5] app to be running in the background. Use the provided `Dockerfile` to create an image with pre-installed requirements.
 
 [1]: http://www.phoenixframework.org/docs/channels
 [2]: http://doc.akka.io/docs/akka-http/current/scala.html

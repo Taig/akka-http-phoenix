@@ -60,9 +60,9 @@ object Response {
 
         implicit val decoderStatus: Decoder[Status] = {
             Decoder[String].map {
-                case "error" ⇒ Error
-                case "ok"    ⇒ Ok
-                case value   ⇒ Status( value )
+                case Error.value ⇒ Error
+                case Ok.value    ⇒ Ok
+                case value       ⇒ Status( value )
             }
         }
     }
