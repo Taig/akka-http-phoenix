@@ -1,3 +1,5 @@
+tutSettings
+
 githubProject := "akka-http-phoenix"
 
 crossScalaVersions :=
@@ -32,3 +34,5 @@ scalaVersion := "2.12.1"
 startYear := Some( 2016 )
 
 testOptions in Test += Tests.Argument( "-oFD" )
+
+tutTargetDirectory := baseDirectory.value
