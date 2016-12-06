@@ -6,7 +6,15 @@
 
 > A simple implementation of (most of) the [Phoenix Channels][1] protocol with [akka HTTP][2] for WebSocket communication and [circe][3] for JSON
 
-Dolar sit amet
+## Installation
+
+_akka HTTP Phoenix_ is available for Scala `2.11` and `2.12`
+
+```scala
+libraryDependencies += "io.taig" %% "akka-http-phoenix" % "1.0.0-SNAPSHOT"
+```
+
+## Usage
 
 ```tut
 1 + 1
