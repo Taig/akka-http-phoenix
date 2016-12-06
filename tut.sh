@@ -8,6 +8,6 @@ set -e # halt on errors
 
 cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
+cd -
 
-cd /akka-http-phoenix/
-sbt tut
+sbt "set skip in update := true" tut

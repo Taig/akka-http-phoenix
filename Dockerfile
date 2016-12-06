@@ -37,11 +37,14 @@ RUN         pip install setuptools
 RUN         pip install codecov
 
 # Cache project dependencies
-RUN         mkdir -p ./cache/src/main/scala/
+RUN         mkdir -p ./cache/src/test/scala/
+RUN         mkdir -p ./cache/project/
+ADD         ./project/plugins.sbt ./cache/project/
 ADD         ./dependencies.sbt ./cache/
+RUN         echo "addSbtPlugin( \"org.tpolecat\" % \"tut-plugin\" % \"0.4.7\" )" >> ./cache/project/plugins.sbt
 RUN         echo "crossScalaVersions := Seq( \"2.11.8\", \"2.12.1\" )" >> ./cache/build.sbt
-RUN         echo "object Foobar" >> ./cache/src/main/scala/Foobar.scala
-RUN         cd ./cache/ && sbt +compile
+RUN         echo "object Foobar" >> ./cache/src/test/scala/Foobar.scala
+RUN         cd ./cache/ && sbt +test
 RUN         rm -r ./cache
 
 WORKDIR     /akka-http-phoenix/

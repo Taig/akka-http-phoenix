@@ -8,9 +8,9 @@ set -e # halt on errors
 
 cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
+cd -
 
-cd /akka-http-phoenix/
-sbt ";coverage;+test;+tut;coverageReport;coverageAggregate"
+sbt "set skip in update := true" ";coverage;+test;+tut;coverageReport;coverageAggregate"
 
 if [ -n "$CODECOV_TOKEN" ]; then
     codecov
