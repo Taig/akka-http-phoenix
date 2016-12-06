@@ -4,8 +4,6 @@
 #
 # docker run --entrypoint="./develop.sh" -v "$PWD:/akka-http-phoenix/" --rm -it taig/akka-http-phoenix:latest
 
-set -e # halt on errors
-
 cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
 cd -
