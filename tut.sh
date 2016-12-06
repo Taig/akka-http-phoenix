@@ -8,4 +8,4 @@ cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
 cd -
 
-sbt "set skip in update := true" tut
+sbt tut

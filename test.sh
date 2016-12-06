@@ -8,7 +8,7 @@ cd ~/phoenix_echo/
 elixir --detached -S mix do phoenix.server
 cd -
 
-sbt "set skip in update := true" ";coverage;+test;+tut;coverageReport;coverageAggregate"
+sbt ";coverage;+test;+tut;coverageReport;coverageAggregate"
 
 if [ -n "$CODECOV_TOKEN" ]; then
     codecov
