@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import io.circe.Json
-import io.taig.akka.http.phoenix.message.Response
+import io.taig.akka.http.phoenix.message.{ Inbound, Response }
 
 import scala.concurrent.duration.Duration.Infinite
 import scala.concurrent.{ Future, TimeoutException }
@@ -13,7 +13,7 @@ import scala.language.postfixOps
 
 case class Channel(
         topic: Topic,
-        flow:  Flow[( Event, Json, Ref ), Response, _]
+        flow:  Flow[( Event, Json, Ref ), Inbound, _]
 )(
         implicit
         as: ActorSystem,
@@ -34,7 +34,7 @@ object Channel {
         payload: Json     = Json.Null,
         timeout: Duration = Default.timeout
     )(
-        flow: Flow[( Event, Json, Ref ), Response, _]
+        flow: Flow[( Event, Json, Ref ), Inbound, _]
     )(
         implicit
         as: ActorSystem,
@@ -49,7 +49,7 @@ object Channel {
     }
 
     def send( event: Event, payload: Json, timeout: Duration = Default.timeout )(
-        flow: Flow[( Event, Json, Ref ), Response, _]
+        flow: Flow[( Event, Json, Ref ), Inbound, _]
     )(
         implicit
         as: ActorSystem,
@@ -61,6 +61,7 @@ object Channel {
 
         val source = Source.single( event, payload, ref )
             .via( flow )
+            .collect { case response: Response ⇒ response }
             .filter( ref == _.ref )
 
         val withTimeout = timeout match {

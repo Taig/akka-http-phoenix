@@ -73,3 +73,7 @@ case class Push(
     event:   Event,
     payload: Json
 ) extends Inbound
+
+object Push {
+    implicit val decoder: Decoder[Push] = deriveDecoder
+}

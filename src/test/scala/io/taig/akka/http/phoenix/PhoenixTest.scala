@@ -1,7 +1,7 @@
 package io.taig.akka.http.phoenix
 
 import akka.stream.scaladsl.{ Keep, Sink, Source }
-import io.taig.akka.http.phoenix.message.{ Request, Response }
+import io.taig.akka.http.phoenix.message.{ Inbound, Request, Response }
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -10,16 +10,15 @@ class PhoenixTest extends Suite {
     it should "send a heartbeat in" in {
         for {
             phoenix ← Phoenix( request )
-            response ← Source
+            Inbound( topic, event ) ← Source
                 .empty[Request]
                 .via( phoenix.flow )
                 .toMat( Sink.head )( Keep.right )
                 .run()
             _ = phoenix.close()
         } yield {
-            response.isOk shouldBe true
-            response.topic shouldBe Topic.Phoenix
-            response.event shouldBe Event.Reply
+            topic shouldBe Topic.Phoenix
+            event shouldBe Event.Reply
         }
     }
 
@@ -42,13 +41,11 @@ class PhoenixTest extends Suite {
         for {
             phoenix ← Phoenix( request )
             _ = phoenix.close()
-            response ← {
-                Source
-                    .single( Request( Topic.Phoenix, Event( "echo" ) ) )
-                    .via( phoenix.flow )
-                    .toMat( Sink.headOption[Response] )( Keep.right )
-                    .run()
-            }
+            response ← Source
+                .single( Request( Topic.Phoenix, Event( "echo" ) ) )
+                .via( phoenix.flow )
+                .toMat( Sink.headOption[Inbound] )( Keep.right )
+                .run()
         } yield response shouldBe None
     }
 

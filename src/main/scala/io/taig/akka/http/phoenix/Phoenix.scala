@@ -11,14 +11,14 @@ import cats.syntax.either._
 import io.circe.Json
 import io.circe.parser._
 import io.circe.syntax._
-import io.taig.akka.http.phoenix.message.{ Request, Response }
+import io.taig.akka.http.phoenix.message.{ Inbound, Push, Request, Response }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 case class Phoenix(
-        flow:       Flow[Request, Response, NotUsed],
+        flow:       Flow[Request, Inbound, NotUsed],
         killswitch: UniqueKillSwitch
 ) {
     def join(
@@ -68,9 +68,11 @@ object Phoenix {
                     }
         }
 
-        val sink = BroadcastHub.sink[Response].contramap[Message] {
+        val sink = BroadcastHub.sink[Inbound].contramap[Message] {
             case TextMessage.Strict( message ) ⇒
-                decode[Response]( message ).valueOr( throw _ )
+                ( decode[Response]( message ): Either[io.circe.Error, Inbound] )
+                    .orElse( decode[Push]( message ) )
+                    .valueOr( throw _ )
             case _ ⇒ throw new RuntimeException( "ohne moos nix los" )
         }
 
