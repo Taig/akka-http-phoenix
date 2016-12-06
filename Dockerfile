@@ -37,7 +37,9 @@ RUN         pip install setuptools
 RUN         pip install codecov
 
 # Cache project dependencies
-ADD         . ./cache/
+ADD         ./dependencies.sbt ./cache/
+RUN         echo """crossScalaVersions := Seq( "2.11.8", "2.12.1" )""" >>> ./cache/build.sbt
+RUN         echo "object Foobar" >>> ./cache/src/main/scala/Foobar.scala
 RUN         cd ./cache/ && sbt +compile
 RUN         rm -r ./cache
 
