@@ -18,3 +18,9 @@ libraryDependencies += "io.taig" %% "akka-http-phoenix" % "1.0.0-SNAPSHOT"
 
 ```scala
 scala> 1 + 1
+res0: Int = 2
+```
+
+[1]: http://www.phoenixframework.org/docs/channels
+[2]: http://doc.akka.io/docs/akka-http/current/scala.html
+[3]: https://github.com/circe/circe

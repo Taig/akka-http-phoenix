@@ -2,7 +2,7 @@
 
 # Docker entrypoint for test suite execution
 #
-# docker run -e CODECOV_TOKEN=$CODECOV_TOKEN --entrypoint="./test.sh" -v "$PWD:/akka-http-phoenix/" taig/akka-http-phoenix:latest
+# docker run -e CODECOV_TOKEN=$CODECOV_TOKEN --entrypoint="./test.sh" -v "$PWD:/akka-http-phoenix/" --rm taig/akka-http-phoenix:latest
 
 set -e # halt on errors
 
