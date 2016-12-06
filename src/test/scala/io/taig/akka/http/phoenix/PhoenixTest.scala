@@ -35,13 +35,13 @@ class PhoenixTest
 
     it should "send a heartbeat in" in {
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
+            phoenix ← Phoenix( request )
             response ← Source
                 .empty[Request]
-                .via( flow )
+                .via( phoenix.flow )
                 .toMat( Sink.head )( Keep.right )
                 .run()
-            _ = killswitch.shutdown()
+            _ = phoenix.close()
         } yield {
             response.isOk shouldBe true
             response.topic shouldBe Topic.Phoenix
@@ -51,13 +51,14 @@ class PhoenixTest
 
     it should "allow to disable the heartbeat" in {
         for {
-            Phoenix( flow, _ ) ← Phoenix( request, heartbeat = None )
+            phoenix ← Phoenix( request, heartbeat = None )
             response ← Source
                 .empty[Request]
                 .completionTimeout( 10 seconds )
-                .via( flow )
+                .via( phoenix.flow )
                 .toMat( Sink.headOption )( Keep.right )
                 .run()
+            _ = phoenix.close()
         } yield {
             response shouldBe None
         }
@@ -65,12 +66,12 @@ class PhoenixTest
 
     it should "allow to close the connection" in {
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
-            _ = killswitch.shutdown()
+            phoenix ← Phoenix( request )
+            _ = phoenix.close()
             response ← {
                 Source
                     .single( Request( Topic.Phoenix, Event( "echo" ) ) )
-                    .via( flow )
+                    .via( phoenix.flow )
                     .toMat( Sink.headOption[Response] )( Keep.right )
                     .run()
             }
@@ -81,9 +82,9 @@ class PhoenixTest
         val topic = Topic( "echo", "foobar" )
 
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
-            Right( channel ) ← Channel.join( topic )( flow )
-            _ = killswitch.shutdown()
+            phoenix ← Phoenix( request )
+            Right( channel ) ← phoenix.join( topic )
+            _ = phoenix.close()
         } yield channel.topic shouldBe topic
     }
 
@@ -91,9 +92,9 @@ class PhoenixTest
         val topic = Topic( "foo", "bar" )
 
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
-            Left( Channel.Result.Failure( response ) ) ← Channel.join( topic )( flow )
-            _ = killswitch.shutdown()
+            phoenix ← Phoenix( request )
+            Left( Result.Failure( response ) ) ← phoenix.join( topic )
+            _ = phoenix.close()
         } yield {
             response.isError shouldBe true
             response.event shouldBe Event.Reply
@@ -106,10 +107,10 @@ class PhoenixTest
         val topic = Topic( "echo", "foobar" )
 
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
-            Right( channel ) ← Channel.join( topic )( flow )
-            Channel.Result.Success( response ) ← channel.leave()
-            _ = killswitch.shutdown()
+            phoenix ← Phoenix( request )
+            Right( channel ) ← phoenix.join( topic )
+            Result.Success( response ) ← channel.leave()
+            _ = phoenix.close()
         } yield {
             response.isOk shouldBe true
             response.event shouldBe Event.Reply
@@ -122,10 +123,10 @@ class PhoenixTest
         val topic = Topic( "echo", "foobar" )
 
         for {
-            Phoenix( flow, killswitch ) ← Phoenix( request )
-            Right( channel ) ← Channel.join( topic )( flow )
-            Channel.Result.Success( response ) ← channel.send( Event( "echo" ), "foobar".asJson )
-            _ = killswitch.shutdown()
+            phoenix ← Phoenix( request )
+            Right( channel ) ← phoenix.join( topic )
+            Result.Success( response ) ← channel.send( Event( "echo" ), "foobar".asJson )
+            _ = phoenix.close()
         } yield {
             response.event shouldBe Event.Reply
             response.topic shouldBe topic

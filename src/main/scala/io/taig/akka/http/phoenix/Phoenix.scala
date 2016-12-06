@@ -21,6 +21,22 @@ case class Phoenix(
         flow:       Flow[Request, Response, NotUsed],
         killswitch: UniqueKillSwitch
 ) {
+    def join(
+        topic:   Topic,
+        payload: Json  = Json.Null
+    )(
+        implicit
+        as: ActorSystem,
+        m:  Materializer
+    ): Future[Either[Error, Channel]] = {
+        val flow = Flow[( Event, Json, Ref )].map {
+            case ( event, payload, ref ) ⇒
+                Request( topic, event, payload, ref )
+        }.via( this.flow ).filter( topic isSubscribedTo _.topic )
+
+        Channel.join( topic, payload )( flow )
+    }
+
     def close(): Unit = killswitch.shutdown()
 }
 
