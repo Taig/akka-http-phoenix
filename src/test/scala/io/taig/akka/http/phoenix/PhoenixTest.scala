@@ -1,7 +1,6 @@
 package io.taig.akka.http.phoenix
 
 import akka.stream.scaladsl.{ Keep, Sink, Source }
-import io.circe.syntax._
 import io.taig.akka.http.phoenix.message.{ Request, Response }
 
 import scala.concurrent.duration._
@@ -75,36 +74,6 @@ class PhoenixTest extends Suite {
             response.event shouldBe Event.Reply
             response.topic shouldBe topic
             response.error shouldBe Some( "unmatched topic" )
-        }
-    }
-
-    it should "allow to leave a Channel" in {
-        val topic = Topic( "echo", "foobar" )
-
-        for {
-            phoenix ← Phoenix( request )
-            Right( channel ) ← phoenix.join( topic )
-            Result.Success( response ) ← channel.leave()
-            _ = phoenix.close()
-        } yield {
-            response.isOk shouldBe true
-            response.event shouldBe Event.Reply
-            response.topic shouldBe topic
-            response.error shouldBe None
-        }
-    }
-
-    it should "receive echo messages" in {
-        val topic = Topic( "echo", "foobar" )
-
-        for {
-            phoenix ← Phoenix( request )
-            Right( channel ) ← phoenix.join( topic )
-            Result.Success( response ) ← channel.send( Event( "echo" ), "foobar".asJson )
-            _ = phoenix.close()
-        } yield {
-            response.event shouldBe Event.Reply
-            response.topic shouldBe topic
         }
     }
 }

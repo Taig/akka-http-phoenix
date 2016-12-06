@@ -2,7 +2,7 @@ package io.taig.akka.http.phoenix
 
 import io.taig.akka.http.phoenix.message.Response
 
-sealed trait Result
+sealed trait Result extends Product with Serializable
 sealed trait Error extends Result
 
 object Result {

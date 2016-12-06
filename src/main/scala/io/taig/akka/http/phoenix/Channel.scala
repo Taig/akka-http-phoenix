@@ -6,7 +6,9 @@ import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
 import io.circe.Json
 import io.taig.akka.http.phoenix.message.Response
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, TimeoutException }
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 case class Channel(
         topic: Topic,
@@ -16,9 +18,11 @@ case class Channel(
         as: ActorSystem,
         m:  Materializer
 ) {
-    def send( event: Event, payload: Json ): Future[Result] = {
-        Channel.send( event, payload )( flow )
-    }
+    def send(
+        event:   Event,
+        payload: Json,
+        timeout: FiniteDuration = 3 second
+    ): Future[Result] = Channel.send( event, payload, timeout )( flow )
 
     def leave(): Future[Result] = send( Event.Leave, Json.Null )
 }
@@ -26,7 +30,8 @@ case class Channel(
 object Channel {
     def join(
         topic:   Topic,
-        payload: Json  = Json.Null
+        payload: Json           = Json.Null,
+        timeout: FiniteDuration = 3 second
     )(
         flow: Flow[( Event, Json, Ref ), Response, _]
     )(
@@ -36,13 +41,13 @@ object Channel {
     ): Future[Either[Error, Channel]] = {
         import as.dispatcher
 
-        send( Event.Join, payload )( flow ).map {
+        send( Event.Join, payload, timeout )( flow ).map {
             case Result.Success( _ ) ⇒ Right( Channel( topic, flow ) )
             case error: Error        ⇒ Left( error )
         }
     }
 
-    def send( event: Event, payload: Json )(
+    def send( event: Event, payload: Json, timeout: FiniteDuration = 1 second )(
         flow: Flow[( Event, Json, Ref ), Response, _]
     )(
         implicit
@@ -56,6 +61,7 @@ object Channel {
         Source.single( event, payload, ref )
             .via( flow )
             .filter( ref == _.ref )
+            .completionTimeout( timeout )
             .toMat( Sink.headOption[Response] )( Keep.right )
             .run()
             .map {
@@ -63,6 +69,9 @@ object Channel {
                     Result.Success( response )
                 case Some( response ) ⇒ Result.Failure( response )
                 case None             ⇒ Result.None
+            }
+            .recover {
+                case _: TimeoutException ⇒ Result.None
             }
     }
 }

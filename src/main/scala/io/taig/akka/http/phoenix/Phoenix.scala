@@ -23,7 +23,8 @@ case class Phoenix(
 ) {
     def join(
         topic:   Topic,
-        payload: Json  = Json.Null
+        payload: Json           = Json.Null,
+        timeout: FiniteDuration = 3 second
     )(
         implicit
         as: ActorSystem,
@@ -34,7 +35,7 @@ case class Phoenix(
                 Request( topic, event, payload, ref )
         }.via( this.flow ).filter( topic isSubscribedTo _.topic )
 
-        Channel.join( topic, payload )( flow )
+        Channel.join( topic, payload, timeout )( flow )
     }
 
     def close(): Unit = killswitch.shutdown()
