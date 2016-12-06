@@ -40,7 +40,8 @@ RUN         pip install codecov
 RUN         mkdir -p ./cache/src/test/scala/
 ADD         ./project/ ./cache/project/
 ADD         ./dependencies.sbt ./cache/
-RUN         echo "crossScalaVersions := Seq( \"2.11.8\", \"2.12.1\" )" > ./cache/build.sbt
+RUN         echo "tutSettings" > ./cache/build.sbt
+RUN         echo "crossScalaVersions := Seq( \"2.11.8\", \"2.12.1\" )" >> ./cache/build.sbt
 RUN         echo "githubProject := \"\"" >> ./cache/build.sbt
 RUN         echo "object Foobar" > ./cache/src/test/scala/Foobar.scala
 RUN         cd ./cache/ && sbt ";coverage;+test;+tut"
