@@ -1,5 +1,7 @@
 # Changelog
 
-_2016-12-xx_
+## 1.0.0
 
-  * Initial release
+_2016-12-07_
+
+ * Initial release

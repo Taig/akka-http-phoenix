@@ -11,7 +11,7 @@
 _akka HTTP Phoenix_ is available for Scala `2.11` and `2.12`
 
 ```scala
-libraryDependencies += "io.taig" %% "akka-http-phoenix" % "1.0.0-SNAPSHOT"
+libraryDependencies += "io.taig" %% "akka-http-phoenix" % "1.0.0"
 ```
 
 ## Usage
@@ -48,9 +48,9 @@ val future = for {
 ```
 ```scala
 scala> try {
-     |     Await.result( future, 3 seconds )
+     |     Await.result( future, 5 seconds )
      | } finally {
-     |     Await.result( system.terminate(), 3 seconds )
+     |     Await.result( system.terminate(), 5 seconds )
      | }
 res5: io.taig.akka.http.phoenix.message.Response =
 Response(Topic(echo:foobar),Event(phx_reply),Some(Payload(Status(ok),{
