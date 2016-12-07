@@ -7,11 +7,6 @@ crossScalaVersions :=
     "2.12.1" ::
     Nil
 
-javacOptions ++=
-    "-source" :: "1.7" ::
-    "-target" :: "1.7" ::
-    Nil
-
 name := "akka-http-phoenix"
 
 organization := "io.taig"
