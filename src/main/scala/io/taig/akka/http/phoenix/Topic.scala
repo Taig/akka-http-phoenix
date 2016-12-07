@@ -28,15 +28,19 @@ object Topic {
 
     val Phoenix = Topic( "phoenix" )
 
+    val Pattern = "(\\w+)(?::(\\w+))?".r
+
     def apply( name: String, identifier: String ): Topic = {
         Topic( name, Some( identifier ) )
     }
 
     def apply( name: String ): Topic = Topic( name, None )
 
-    def parse( topic: String ): Option[Topic] = topic.split( ":" ) match {
-        case Array( name )             ⇒ Some( Topic( name ) )
-        case Array( name, identifier ) ⇒ Some( Topic( name, identifier ) )
-        case _                         ⇒ None
+    def parse( topic: String ): Option[Topic] = {
+        topic match {
+            case Pattern( name, identifier ) ⇒
+                Some( Topic( name, Option( identifier ) ) )
+            case _ ⇒ None
+        }
     }
 }

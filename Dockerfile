@@ -51,3 +51,4 @@ WORKDIR     /akka-http-phoenix/
 
 # Prevent depdendency resolution
 RUN         echo "skip in update := true" > offline.sbt
+RUN         echo "offline := true" >> offline.sbt
