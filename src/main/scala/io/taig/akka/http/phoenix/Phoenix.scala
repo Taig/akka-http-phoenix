@@ -57,15 +57,7 @@ object Phoenix {
                 MergeHub
                     .source[Request]
                     .merge( Phoenix.heartbeat( heartbeat ) )
-                    .map { request ⇒
-                        TextMessage( request.asJson.noSpaces )
-                    }
-            case None ⇒
-                MergeHub
-                    .source[Request]
-                    .map { request ⇒
-                        TextMessage( request.asJson.noSpaces )
-                    }
+            case None ⇒ MergeHub.source[Request]
         }
 
         val sink = BroadcastHub.sink[Inbound].contramap[Message] {
@@ -73,10 +65,11 @@ object Phoenix {
                 ( decode[Response]( message ): Either[io.circe.Error, Inbound] )
                     .orElse( decode[Push]( message ) )
                     .valueOr( throw _ )
-            case _ ⇒ throw new RuntimeException( "ohne moos nix los" )
+            case _ ⇒ throw new RuntimeException( "Invalid message format" )
         }
 
         val ( ( ( in, killswitch ), upgrade ), out ) = source
+            .map( request ⇒ TextMessage( request.asJson.noSpaces ) )
             .viaMat( KillSwitches.single )( Keep.both )
             .viaMat( websocket )( Keep.both )
             .toMat( sink )( Keep.both )
@@ -85,7 +78,8 @@ object Phoenix {
         upgrade.map( _.response.status ).map {
             case StatusCodes.SwitchingProtocols ⇒
                 Phoenix( Flow.fromSinkAndSource( in, out ), killswitch )
-            case _ ⇒ throw new RuntimeException( "ohne moos nix los" )
+            case _ ⇒
+                throw new RuntimeException( "Server does not support WebSockets" )
         }
     }
 
@@ -103,7 +97,7 @@ object Phoenix {
 
     def heartbeat( delay: FiniteDuration ): Source[Request, Cancellable] = {
         def request = Request(
-            Topic( "phoenix" ),
+            Topic.Phoenix,
             Event( "heartbeat" ),
             Json.Null,
             _: Ref
