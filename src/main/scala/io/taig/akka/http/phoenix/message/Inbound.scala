@@ -1,9 +1,10 @@
 package io.taig.akka.http.phoenix.message
 
-import io.circe.{ Decoder, Json }
-import io.circe.generic.semiauto._
-import io.taig.akka.http.phoenix.{ Event, Ref, Topic }
 import cats.syntax.either._
+import io.circe.generic.JsonCodec
+import io.circe.generic.semiauto._
+import io.circe.{ Decoder, Json }
+import io.taig.akka.http.phoenix.{ Event, Ref, Topic }
 
 sealed trait Inbound extends Product with Serializable {
     def topic: Topic
@@ -68,12 +69,9 @@ object Response {
     }
 }
 
+@JsonCodec
 case class Push(
     topic:   Topic,
     event:   Event,
     payload: Json
 ) extends Inbound
-
-object Push {
-    implicit val decoder: Decoder[Push] = deriveDecoder
-}
