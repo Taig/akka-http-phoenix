@@ -59,10 +59,10 @@ object Response {
         object Ok extends Status( "ok" )
 
         implicit val decoderStatus: Decoder[Status] = {
-            Decoder[String].map {
-                case Error.value ⇒ Error
-                case Ok.value    ⇒ Ok
-                case value       ⇒ Status( value )
+            Decoder[String].emap {
+                case Error.value ⇒ Right( Error )
+                case Ok.value    ⇒ Right( Ok )
+                case status      ⇒ Left( s"Invalid status '$status'" )
             }
         }
     }
