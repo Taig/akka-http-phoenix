@@ -47,6 +47,4 @@ RUN         echo "object Foobar" > ./cache/src/test/scala/Foobar.scala
 RUN         cd ./cache/ && sbt ";coverage;+test;+tut"
 RUN         rm -r ./cache
 
-RUN         cd ~/.sbt/0.13/ && echo "offline := true" > offline.sbt
-
 WORKDIR     /akka-http-phoenix/
